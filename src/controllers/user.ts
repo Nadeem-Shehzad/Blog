@@ -1,18 +1,18 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { IUser, IMutationResponse, ISignIn, ISignInResponse } from '../utils/types';
-import User from '../models/user';
+import { IUser, IMutationResponse, ISignIn, MyContext, IQueryResponse } from '../utils/types';
+import User, { UserDocument } from '../models/user';
 
 
 export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {
 
-    const user = await User.findOne({ email: userData.email });
+    const user = await User.findUserByEmail(userData.email);
 
     if (user) {
         return { success: false, message: 'User Exists.', data: null };
     }
 
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
+    const hashedPassword = await User.hashedPassword(userData.password);
 
     const newUser = await User.create({
         ...userData,
@@ -25,35 +25,78 @@ export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promis
 }
 
 
-export const mSignIn = async (_: any, { userData }: { userData: ISignIn }): Promise<ISignInResponse> => {
+export const mSignIn = async (_: any, { userData }: { userData: ISignIn }): Promise<IMutationResponse> => {
 
-    const user = await User.findOne({ email: userData.email });
+    const user = await User.findUserByEmail(userData.email);
 
     if (!user) {
-        return { success: false, message: 'User not Exists.', token: null };
+        return { success: false, message: 'User not Exists.', data: null };
     }
 
-    const passwordMatched = await bcrypt.compare(userData.password, user.password);
+    const passwordMatched = await user.isPasswordMatched(userData.password);
     if (!passwordMatched) {
-        return { success: false, message: 'Password not matched.', token: null };
+        return { success: false, message: 'Password not matched.', data: null };
     }
 
     const jwt_secret = process.env.JWT_SECRET;
     if (!jwt_secret) {
-        return { success: false, message: 'JWT_SECRET missing.', token: null };
+        return { success: false, message: 'JWT_SECRET token missing.', data: null };
     }
 
     const token = jwt.sign({
         userId: user._id,
-        email: user.email
+        email: user.email,
+        role: user.role
     }, jwt_secret, { expiresIn: '55m' });
 
-    return { success: true, message: 'User SignedIn.', token: token }
+    const updatedUserData = await User.findByIdAndUpdate(
+        user._id,
+        {
+            $set: { token: token }
+        },
+        { new: true }
+    );
+
+    return { success: true, message: 'User SignedIn.', data: updatedUserData };
 }
 
 
-export const qGetUsers = async (): Promise<IUser[]> => {
+export const mSignOut = async (_: any, __: any, contextValue: MyContext): Promise<IMutationResponse> => {
 
-    const users: IUser[] = await User.find({}); 
-    return users;
+    const { userId } = contextValue;
+    if (!userId) {
+        return { success: false, message: 'You must logged in!.', data: null };
+    }
+
+    const updatedUserData = await User.findByIdAndUpdate(
+        userId,
+        {
+            $set: { token: '' }
+        },
+        { new: true }
+    );
+
+    return { success: true, message: 'User SignedOut.', data: updatedUserData };
+}
+
+
+export const qGetReaders = async (_: any, __: any, contextValue: MyContext): Promise<IQueryResponse> => {
+
+    const { userId } = contextValue;
+    if (!userId) {
+        return { success: false, message: 'You must logged in!.', data: null };
+    }
+
+    const { role } = contextValue;
+    if (role?.toString() !== 'Admin') {
+        return { success: false, message: 'Access denied!.', data: null };
+    }
+
+    try {
+        const users = await User.find({ role: { $nin: ['Admin', 'Author'] } });
+        return { success: true, message: 'User Data', data: users };
+        
+    } catch (error) {
+        return { success: true, message: 'Data fetching Error!', data: null }
+    }
 }

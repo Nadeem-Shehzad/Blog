@@ -8,10 +8,20 @@ type User{
     username:String!
     email:String!
     password:String!
+    image: String
+    bio: String
+    role: String
+    token: String
+}
+
+type QueryResponse{
+    success: Boolean!
+    message: String!
+    data: [User]
 }
 
 type Query{
-    getUsers: [User]
+    getReaders: QueryResponse
 }
 
 
@@ -20,6 +30,10 @@ input UserInput{
     username: String!
     email: String!
     password: String!
+    image: String
+    bio: String
+    role: String
+    token: String
 }
 
 input SignInInput{
@@ -33,16 +47,11 @@ type MutationResponse{
     data: User
 }
 
-type SignInResponse{
-    success: Boolean!
-    message: String!
-    token: String
-}
-
 
 type Mutation{
     signup(userData: UserInput) : MutationResponse
-    signin(userData: SignInInput) : SignInResponse
+    signin(userData: SignInInput) : MutationResponse
+    signout: MutationResponse
 }
 
 `;

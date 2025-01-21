@@ -1,14 +1,15 @@
 
-import { mSignUp, mSignIn } from '../controllers/user';
-import { qGetUsers } from '../controllers/user';
+import { mSignUp, mSignIn, mSignOut } from '../controllers/user';
+import { qGetReaders } from '../controllers/user';
 
 export const userResolver = {
     Query: {
-        getUsers: qGetUsers
+        getReaders: qGetReaders
     },
 
     Mutation: {
         signup: mSignUp,
-        signin: mSignIn
+        signin: mSignIn,
+        signout: mSignOut
     }
 }

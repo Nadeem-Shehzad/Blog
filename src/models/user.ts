@@ -13,6 +13,7 @@ export interface UserModel extends Model<UserDocument> {
     hashedPassword(password: string): Promise<string>;
 }
 
+
 const UserSchema = new mongoose.Schema<UserDocument, UserModel>({
     username: {
         type: String,

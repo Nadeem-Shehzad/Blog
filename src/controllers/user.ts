@@ -1,7 +1,6 @@
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { IUser, IMutationResponse, ISignIn, MyContext, IQueryResponse } from '../utils/types';
-import User, { UserDocument } from '../models/user';
+import User from '../models/user';
 
 
 export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {
@@ -95,7 +94,7 @@ export const qGetReaders = async (_: any, __: any, contextValue: MyContext): Pro
     try {
         const users = await User.find({ role: { $nin: ['Admin', 'Author'] } });
         return { success: true, message: 'User Data', data: users };
-        
+
     } catch (error) {
         return { success: true, message: 'Data fetching Error!', data: null }
     }

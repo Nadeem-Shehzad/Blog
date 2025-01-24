@@ -1,36 +1,62 @@
+import express, { Application, Request, Response, NextFunction } from 'express';
+import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServer } from '@apollo/server';
-import { startStandaloneServer } from '@apollo/server/standalone';
 import dotenv from 'dotenv';
+import cors from 'cors';
+import fileUpload from 'express-fileupload';
 
 import { connectDB } from './config/dbConnection';
 import { typeDefs } from './schemas/allSchemas';
-import { resolvers } from './resolvers/allResolvers'
-import { IncomingMessage } from 'http';
+import { resolvers } from './resolvers/allResolvers';
 import { MyContext } from './utils/types';
 import { tokenValidation } from './middlewares/tokenValidation';
+import router from './routes/route';
+
 
 dotenv.config();
 connectDB();
 
-const server: ApolloServer = new ApolloServer({
+const app: Application = express();
+// to get temp files like images
+app.use(fileUpload({
+  useTempFiles: true,
+  limits: { fileSize: 50 * 2024 * 1024 }
+}));
+
+app.use(cors());
+app.use(express.json());
+
+// auth route
+app.use('/api',router);
+
+// Apollo Server instance
+const apolloServer = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
 });
 
-const startServer = async (): Promise<void> => {
-  const { url } = await startStandaloneServer(server, {
-    context: async ({ req }: { req: IncomingMessage }): Promise<MyContext> => {
-      const contextData = await tokenValidation({ req });
-      return {
-        userId: contextData.userId,
-        email: contextData.email,
-        role: contextData.role
-      }
-    },
-    listen: { port: 4000 },
+const startApolloServer = async (): Promise<void> => {
+  await apolloServer.start();
+
+  app.use(
+    '/graphql',
+    expressMiddleware(apolloServer, {
+      context: async ({ req }: { req: Request }): Promise<MyContext> => {
+        const contextData = await tokenValidation({ req });
+        return {
+          userId: contextData.userId,
+          email: contextData.email,
+          role: contextData.role,
+        };
+      },
+    }),
+  );
+
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`🚀 GraphQL endpoint at http://localhost:${PORT}/graphql`);
   });
+};
 
-  console.log(`🚀 Server ready at: ${url}`);
-}
-
-startServer();
+startApolloServer();

@@ -49,7 +49,7 @@ type MutationResponse{
 
 
 type Mutation{
-    #signup(userData: UserInput) : MutationResponse
+    signup(userData: UserInput) : MutationResponse
     signin(userData: SignInInput) : MutationResponse
     signout: MutationResponse
 }

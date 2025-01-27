@@ -1,9 +1,10 @@
 import express from "express";
 
-import { signUp } from '../controllers/exp_controller';
+import { upload,deleteFile } from '../controllers/exp_controller';
 
 const router = express.Router();
 
-router.post('/signup', signUp);
+router.post('/upload', upload);
+router.post('/delete', deleteFile);
 
 export default router;

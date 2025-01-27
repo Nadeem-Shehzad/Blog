@@ -8,7 +8,7 @@ export const userResolver = {
     },
 
     Mutation: {
-        //signup: mSignUp,
+        signup: mSignUp,
         signin: mSignIn,
         signout: mSignOut
     }

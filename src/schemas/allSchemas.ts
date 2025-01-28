@@ -1,10 +1,16 @@
 import { gql } from 'graphql-tag';
 
-import { userSchema } from './common/auth';
-import { blogSchema } from './author/blog';
+import { authSchema } from './common/auth';
+import { authorBlogSchema } from './author/blog';
+import { commonBlogSchema } from './common/blog';
+import { adminBlogSchema } from './admin/blog';
+import {readerBlogSchema} from './reader/blog';
 
 
 export const typeDefs = gql`
- ${userSchema}
- ${blogSchema}
+ ${adminBlogSchema}
+ ${authSchema}
+ ${authorBlogSchema}
+ ${commonBlogSchema}
+ ${readerBlogSchema}
 `;

@@ -11,3 +11,9 @@ export const checkUserIsAuthor = (role: string | undefined) => {
         throw new Error('Sorry! you are not allowed to create post.');
     }
 }
+
+export const checkUserIsReader = (role: string | undefined) => {
+    if(role !== 'Reader'){
+        throw new Error('Sorry! you are not allowed to like or dislike the blog.');
+    }
+}

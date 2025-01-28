@@ -3,15 +3,15 @@ import { gql } from 'graphql-tag';
 import {
     BlogType, LikeType, CommentType,
     ImageType, BlogQueryResponse, SingleBlogQueryResponse
-} from '../blogTypes/queryTypes';
+} from '../dataTypes/blogTypes/queryTypes';
 
 import {
     BlogInput, BlogUpdateInput, LikeInput,
     CommentInput, ImageInput, BlogMutationResponse
-} from '../blogTypes/mutationTypes';
+} from '../dataTypes/blogTypes/mutationTypes';
 
 
-export const blogSchema = gql`
+export const authorBlogSchema = gql`
 
 # query types
 ${BlogType}
@@ -23,7 +23,7 @@ ${SingleBlogQueryResponse}
 
 # queries
 type Query{
-    getBlogs: BlogQueryResponse
+    getDraftedBlogs: BlogQueryResponse
     getBlog(blogId: String!): SingleBlogQueryResponse
 }
 

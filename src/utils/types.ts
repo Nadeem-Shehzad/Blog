@@ -65,3 +65,8 @@ export interface BlogResponse {
     message: string;
     data: BlogDocument[] | BlogDocument | null
 }
+
+export interface LikedBlogResponse {
+    success: boolean;
+    message: string;
+}

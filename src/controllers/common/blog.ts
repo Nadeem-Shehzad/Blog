@@ -1,4 +1,4 @@
-import { IBlog, BlogResponse, MyContext } from '../../utils/types';
+import { BlogResponse } from '../../utils/types';
 import Blog from '../../models/blog';
 
 

@@ -1,10 +1,10 @@
 
-import { userResolver } from './user'
-import {blogResolver} from './blog';
+import { userResolver } from './common/auth'
+import {blogResolver} from './author/blog';
 
 export const resolvers = {
     Query: {
-        ...userResolver.Query,
+        //...userResolver.Query,
         ...blogResolver.Query
     },
 

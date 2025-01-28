@@ -1,10 +1,11 @@
 import express from "express";
 
-import { upload,deleteFile } from '../controllers/exp_controller';
+import { upload, updateFile, deleteFile } from '../controllers/File/exp_controller';
 
 const router = express.Router();
 
 router.post('/upload', upload);
-router.post('/delete', deleteFile);
+router.put('/update', updateFile);
+router.delete('/delete', deleteFile);
 
 export default router;

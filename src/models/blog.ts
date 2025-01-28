@@ -24,12 +24,16 @@ const blogSchema: Schema = new Schema({
     image: {
         public_id: { // needs public_id to delete it from cloudinary
             type: String,
-            required: [true,'image public_id missing!']
+            required: [true, 'image public_id missing!']
         },
         url: {
             type: String,
-            required: [true,'image url missing!']       
+            required: [true, 'image url missing!']
         }
+    },
+    tags: {
+        type: [String], 
+        default: [],
     },
     likes: {
         type: [{
@@ -48,13 +52,18 @@ const blogSchema: Schema = new Schema({
                 ref: 'Users',
                 require: true
             },
-            comment:{
+            comment: {
                 type: String,
                 max: 100,
                 require: true
             }
         }],
         default: []
+    },
+    status: {
+        type: String,
+        enum: ['draft', 'published'],
+        default: 'draft'
     }
 }, { timestamps: true });
 

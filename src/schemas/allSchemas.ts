@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 
-import { userSchema } from './user';
-import { blogSchema } from './blog';
+import { userSchema } from './common/auth';
+import { blogSchema } from './author/blog';
 
 
 export const typeDefs = gql`

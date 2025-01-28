@@ -1,43 +1,60 @@
-import { IBlog, BlogResponse, MyContext } from '../utils/types';
-import Blog from '../models/blog';
-import { checkUserLoggedIn, checkUserIsAuthor } from '../utils/commonUtils';
-import cloudinary from '../config/cloudinaryConfig';
+import { IBlog, BlogResponse, MyContext } from '../../utils/types';
+import Blog from '../../models/blog';
+import { checkUserLoggedIn, checkUserIsAuthor } from '../../utils/commonUtils';
 
 
-export const qGetBlogs = async (): Promise<BlogResponse> => {
-    const blogs = await Blog.find({});
-    return { success: true, message: 'All Blogs', data: blogs };
-};
+// <------- Author Query ------->
 
+export const qGetDraftedBlogs = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<BlogResponse> => {
+    const { userId } = contextValue;
 
-export const qGetBlog = async (_: any, { blogId }: { blogId: string }): Promise<BlogResponse> => {
-    const blog = await Blog.findById(blogId);
-    if (!blog) {
-        return { success: false, message: 'Blog not Exist!', data: null };
+    try {
+        checkUserLoggedIn(userId);
+
+        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: userId }] });
+    
+        return { success: true, message: 'All Drafted Blogs', data: draftedBlogs };
+        
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return { success: false, message: error.message, data: null };
+
+        } else {
+            return { success: false, message: 'Server error occurred', data: null };
+        }
     }
-    return { success: true, message: 'Blog', data: blog };
 };
 
+// <------- End Author Query ------->
+
+
+
+// <------- Author Mutation ------->
 
 export const mCreateBlog = async (_: any, { blogData }: { blogData: IBlog }, contextValue: MyContext): Promise<BlogResponse> => {
 
     const { userId, role } = contextValue;
+    const { title, description, image, tags, status } = blogData;
 
     try {
         checkUserLoggedIn(userId);
         checkUserIsAuthor(role);
 
+        const finalStatus = status || "draft";
+
         const newBlog = await Blog.create({
             creater_id: userId,
-            title: blogData.title,
-            description: blogData.description,
+            title: title,
+            description: description,
             image: {
-                public_id: blogData.image.public_id,
-                url: blogData.image.url
+                public_id: image.public_id,
+                url: image.url
             },
+            tags: tags || [],
+            status: finalStatus
         });
 
-        return { success: true, message: 'Blog Created.', data: newBlog };
+        return { success: true, message: `Blog ${finalStatus === "published" ? "published" : "saved as draft"}`, data: newBlog };
 
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -104,7 +121,7 @@ export const mDeleteBlog = async (_: any, { blogId }: { blogId: string }, contex
             return { success: false, message: 'Access Denied!', data: null };
         }
 
-        const deletedBlog = await Blog.findByIdAndDelete(blogId); 
+        const deletedBlog = await Blog.findByIdAndDelete(blogId);
 
         return { success: true, message: 'Blog Deleted.', data: deletedBlog };
 
@@ -117,3 +134,5 @@ export const mDeleteBlog = async (_: any, { blogId }: { blogId: string }, contex
         }
     }
 };
+
+// <------- End Author Mutation ------->

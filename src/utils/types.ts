@@ -53,9 +53,11 @@ export interface IBlog {
     creater_id: mongoose.Types.ObjectId;
     title: string;
     image: { public_id: string; url: string };
+    tags: string[],
     description: string;
     likes: { userId: mongoose.Types.ObjectId }[];
-    comments: { userId: mongoose.Types.ObjectId, comment: string }[]
+    comments: { userId: mongoose.Types.ObjectId, comment: string }[];
+    status: string;
 }
 
 export interface BlogResponse {

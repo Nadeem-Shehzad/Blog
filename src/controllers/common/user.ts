@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { IUser, IMutationResponse, ISignIn, MyContext, IQueryResponse } from '../utils/types';
-import User from '../models/user';
+import { IUser, IMutationResponse, ISignIn, MyContext, IQueryResponse } from '../../utils/types';
+import User from '../../models/user';
 
 
 export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {

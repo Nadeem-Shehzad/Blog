@@ -20,6 +20,10 @@ ${SingleBlogQueryResponse}
 type Query{
     getBlogs: BlogQueryResponse
     getBlog(blogId: String!): SingleBlogQueryResponse
+    # searchBlog
+    # viewblog by author
+    # filter blog by tag and category
+    # author profile
 }
 
 `;

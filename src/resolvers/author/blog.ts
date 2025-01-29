@@ -4,7 +4,6 @@ import { mCreateBlog, mUpdateBlog, mDeleteBlog } from '../../controllers/author/
 export const authorBlogResolver = {
     Query: {
         getDraftedBlogs: qGetDraftedBlogs,
-        //getBlog: qGetBlog
     },
     Mutation: {
         createBlog: mCreateBlog,

@@ -9,7 +9,8 @@ export const resolvers = {
     Query: {
         ...adminBlogResolver.Query,
         ...authorBlogResolver.Query,
-        ...commonBlogResolver.Query
+        ...commonBlogResolver.Query,
+        ...readerBlogResolver.Query
     },
 
     Mutation: {

@@ -2,6 +2,8 @@ import mongoose from 'mongoose';
 import { UserDocument } from '../models/user';
 import { JwtPayload } from 'jsonwebtoken';
 import { BlogDocument } from '../models/blog';
+import { IBookMarkBlog } from '../models/bookmark';
+import {ILikedBlog} from '../models/likedBlog';
 
 
 // User Types
@@ -69,4 +71,11 @@ export interface BlogResponse {
 export interface LikedBlogResponse {
     success: boolean;
     message: string;
+    data: ILikedBlog[] | ILikedBlog | null
+}
+
+export interface M_BookmarkResponse {
+    success: boolean;
+    message: string;
+    data: IBookMarkBlog[] | IBookMarkBlog | null
 }

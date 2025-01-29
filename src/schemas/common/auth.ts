@@ -13,6 +13,10 @@ type Mutation{
     signup(userData: UserInput) : MutationResponse
     signin(userData: SignInInput) : MutationResponse
     signout: MutationResponse
+    # updateProfile
+    # forgotPassword
+    # resetPassword
+    # deleteAccount
 }
 
 `;

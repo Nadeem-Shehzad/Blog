@@ -10,14 +10,23 @@ export const UserInput = `
     token: String
 }`;
 
+export const UserUpdateInput = `
+ input UserUpdateInput{
+    username: String
+    email: String
+    password: String
+    image: String
+    bio: String
+}`;
+
 export const SignInInput = `
  input SignInInput{
     email: String!
     password: String!
 }`;
 
-export const MutationResponse = `
- type MutationResponse{
+export const AuthMutationResponse = `
+ type AuthMutationResponse{
     success: Boolean!
     message: String!
     data: User

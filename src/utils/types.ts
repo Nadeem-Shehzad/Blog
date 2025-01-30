@@ -20,6 +20,14 @@ export interface IUser {
     token: string;
 }
 
+export interface UpdateIUser {
+    username: string;
+    email: string;
+    password: string;
+    image: string;
+    bio: string;
+}
+
 export interface IQueryResponse {
     success: boolean;
     message: string;

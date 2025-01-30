@@ -3,19 +3,16 @@ import { LikedBlogResponse, MyContext, M_BookmarkResponse } from '../../utils/ty
 import Blog from '../../models/blog';
 import LikedBlog from '../../models/likedBlog';
 import BookMarkBlog from '../../models/bookmark';
-import { checkUserLoggedIn, checkUserIsReader } from '../../utils/commonUtils';
+import { authMiddleware } from '../../middlewares/common/auth';
+import { checkRole } from '../../middlewares/common/checkRole';
 
 
 
-export const mLikedBlog = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<LikedBlogResponse> => {
-
-    const { userId, role } = contextValue;
+export const mLikedBlog = authMiddleware(checkRole(['Reader'])(async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<LikedBlogResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsReader(role);
 
-        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const userObjectId = new mongoose.Types.ObjectId(context.userId);
 
         const blog = await Blog.findById(blogId);
         if (!blog) {
@@ -54,18 +51,13 @@ export const mLikedBlog = async (_: any, { blogId }: { blogId: string }, context
             return { success: false, message: 'Server error occurred', data: null };
         }
     }
-}
+}));
 
 
-export const qGetMyLikedBlogs = async (_: any, __: any, contextValue: MyContext): Promise<LikedBlogResponse> => {
-
-    const { userId, role } = contextValue;
+export const qGetMyLikedBlogs = authMiddleware(checkRole(['Reader'])(async (_: any, __: any, context: MyContext): Promise<LikedBlogResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsReader(role);
-
-        const likedBlogs = await LikedBlog.find({ userId: userId });
+        const likedBlogs = await LikedBlog.find({ userId: context.userId });
 
         return { success: true, message: 'Your liked blogs.', data: likedBlogs };
 
@@ -77,29 +69,25 @@ export const qGetMyLikedBlogs = async (_: any, __: any, contextValue: MyContext)
             return { success: false, message: 'Server error occurred!', data: null };
         }
     }
-}
+}));
 
 
-export const mBookMarkedBlog = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<M_BookmarkResponse> => {
-
-    const { userId, role } = contextValue;
+export const mBookMarkedBlog = authMiddleware(checkRole(['Reader'])(async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<M_BookmarkResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsReader(role);
 
         const blog = await Blog.findById(blogId);
         if (!blog) {
             return { success: false, message: 'Blog not exist!', data: null };
         }
 
-        const isBookMarked = await BookMarkBlog.findOne({ $and: [{ userId: userId }, { blogId: blogId }] });
+        const isBookMarked = await BookMarkBlog.findOne({ $and: [{ userId: context.userId }, { blogId: blogId }] });
         if (isBookMarked) {
             return { success: false, message: 'Already Bookmarked!', data: null };
         }
 
         await BookMarkBlog.create({
-            userId,
+            userId: context.userId,
             blogId
         });
 
@@ -113,18 +101,14 @@ export const mBookMarkedBlog = async (_: any, { blogId }: { blogId: string }, co
             return { success: false, message: 'Server error occurred!', data: null };
         }
     }
-}
+}));
 
 
-export const qGetMyBookmark = async (_: any, __: any, contextValue: MyContext): Promise<M_BookmarkResponse> => {
-
-    const { userId, role } = contextValue;
+export const qGetMyBookmark = authMiddleware(checkRole(['Reader'])(async (_: any, __: any, context: MyContext): Promise<M_BookmarkResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsReader(role);
 
-        const bookMarks = await BookMarkBlog.find({ userId: userId });
+        const bookMarks = await BookMarkBlog.find({ userId: context.userId });
 
         return { success: true, message: 'Your bookmarks.', data: bookMarks };
 
@@ -136,23 +120,19 @@ export const qGetMyBookmark = async (_: any, __: any, contextValue: MyContext): 
             return { success: false, message: 'Server error occurred!', data: null };
         }
     }
-}
+}));
 
 
-export const mDeleteBookMarkedBlog = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<M_BookmarkResponse> => {
-
-    const { userId, role } = contextValue;
+export const mDeleteBookMarkedBlog = authMiddleware(checkRole(['Reader'])(async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<M_BookmarkResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsReader(role);
 
         const bookmark = await BookMarkBlog.findById(blogId);
         if (!bookmark) {
             return { success: false, message: 'Bookmark not exist!', data: null };
         }
 
-        if (bookmark.userId.toString() !== userId) {
+        if (bookmark.userId.toString() !== context.userId) {
             return { success: false, message: 'Not Allowed to delete others bookmark!', data: null };
         }
 
@@ -168,4 +148,4 @@ export const mDeleteBookMarkedBlog = async (_: any, { blogId }: { blogId: string
             return { success: false, message: 'Server error occurred!', data: null };
         }
     }
-}
+}));

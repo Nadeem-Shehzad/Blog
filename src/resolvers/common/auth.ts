@@ -1,5 +1,5 @@
 
-import { mSignUp, mSignIn, mSignOut } from '../../controllers/common/user';
+import { mSignUp, mSignIn, mSignOut, mUpdateProfile,mResetPassword,mDeleteAccount } from '../../controllers/common/auth';
 
 
 export const authResolver = {
@@ -7,6 +7,9 @@ export const authResolver = {
     Mutation: {
         signup: mSignUp,
         signin: mSignIn,
-        signout: mSignOut
+        signout: mSignOut,
+        updateProfile: mUpdateProfile,
+        resetPassword: mResetPassword,
+        deleteAccount: mDeleteAccount
     }
 }

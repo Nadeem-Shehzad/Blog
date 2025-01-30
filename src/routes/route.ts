@@ -1,6 +1,6 @@
 import express from "express";
 
-import { upload, updateFile, deleteFile } from '../controllers/File/exp_controller';
+import { upload, updateFile, deleteFile } from '../controllers/File/file_controller';
 
 const router = express.Router();
 

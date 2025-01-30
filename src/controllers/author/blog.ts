@@ -1,17 +1,16 @@
 import { IBlog, BlogResponse, MyContext } from '../../utils/types';
 import Blog from '../../models/blog';
-import { checkUserLoggedIn, checkUserIsAuthor } from '../../utils/commonUtils';
+import { authMiddleware } from '../../middlewares/common/auth';
+import { checkRole } from '../../middlewares/common/checkRole';
 
 
 // <------- Author Query ------->
 
-export const qGetDraftedBlogs = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<BlogResponse> => {
-    const { userId } = contextValue;
+export const qGetDraftedBlogs = authMiddleware(checkRole(['Author'])(async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<BlogResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
 
-        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: userId }] });
+        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: context.userId }] });
     
         return { success: true, message: 'All Drafted Blogs', data: draftedBlogs };
         
@@ -23,7 +22,26 @@ export const qGetDraftedBlogs = async (_: any, { blogId }: { blogId: string }, c
             return { success: false, message: 'Server error occurred', data: null };
         }
     }
-};
+}));
+
+
+export const qGetMyBlogs = authMiddleware(checkRole(['Author'])(async (_: any, __:any, context: MyContext): Promise<BlogResponse> => {
+
+    try {
+
+        const myBlogs = await Blog.find({ $and: [{ status: 'published' }, { creater_id: context.userId }] });
+    
+        return { success: true, message: 'All Your Blogs', data: myBlogs };
+        
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return { success: false, message: error.message, data: null };
+
+        } else {
+            return { success: false, message: 'Server error occurred', data: null };
+        }
+    }
+}));
 
 // <------- End Author Query ------->
 
@@ -31,19 +49,16 @@ export const qGetDraftedBlogs = async (_: any, { blogId }: { blogId: string }, c
 
 // <------- Author Mutation ------->
 
-export const mCreateBlog = async (_: any, { blogData }: { blogData: IBlog }, contextValue: MyContext): Promise<BlogResponse> => {
+export const mCreateBlog = authMiddleware(checkRole(['Author'])(async (_: any, { blogData }: { blogData: IBlog }, context: MyContext): Promise<BlogResponse> => {
 
-    const { userId, role } = contextValue;
     const { title, description, image, tags, status } = blogData;
 
     try {
-        checkUserLoggedIn(userId);
-        checkUserIsAuthor(role);
 
         const finalStatus = status || "draft";
 
         const newBlog = await Blog.create({
-            creater_id: userId,
+            creater_id: context.userId,
             title: title,
             description: description,
             image: {
@@ -63,22 +78,19 @@ export const mCreateBlog = async (_: any, { blogData }: { blogData: IBlog }, con
             return { success: false, message: 'Server error occurred', data: null };
         }
     }
-};
+}));
 
 
-export const mUpdateBlog = async (_: any, { blogId, blogData }: { blogId: string, blogData: IBlog }, contextValue: MyContext): Promise<BlogResponse> => {
-
-    const { userId } = contextValue;
+export const mUpdateBlog = authMiddleware(checkRole(['Author'])(async (_: any, { blogId, blogData }: { blogId: string, blogData: IBlog }, context: MyContext): Promise<BlogResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
 
         const blog = await Blog.findById(blogId);
         if (!blog) {
             return { success: false, message: 'Blog not Exist!', data: null };
         }
 
-        if (blog.creater_id.toString() !== userId) {
+        if (blog.creater_id.toString() !== context.userId) {
             return { success: false, message: 'Access Denied!', data: null };
         }
 
@@ -102,22 +114,19 @@ export const mUpdateBlog = async (_: any, { blogId, blogData }: { blogId: string
             return { success: false, message: 'Server error occurred', data: null };
         }
     }
-};
+}));
 
 
-export const mDeleteBlog = async (_: any, { blogId }: { blogId: string }, contextValue: MyContext): Promise<BlogResponse> => {
-
-    const { userId } = contextValue;
+export const mDeleteBlog = authMiddleware(checkRole(['Author'])(async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<BlogResponse> => {
 
     try {
-        checkUserLoggedIn(userId);
 
         const blog = await Blog.findById(blogId);
         if (!blog) {
             return { success: false, message: 'Blog not Exist!', data: null };
         }
 
-        if (blog.creater_id.toString() !== userId) {
+        if (blog.creater_id.toString() !== context.userId) {
             return { success: false, message: 'Access Denied!', data: null };
         }
 
@@ -133,6 +142,6 @@ export const mDeleteBlog = async (_: any, { blogId }: { blogId: string }, contex
             return { success: false, message: 'Server error occurred', data: null };
         }
     }
-};
+}));
 
 // <------- End Author Mutation ------->

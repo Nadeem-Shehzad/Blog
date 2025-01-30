@@ -1,22 +1,23 @@
 import { gql } from 'graphql-tag';
 
-import {UserInput, SignInInput,MutationResponse} from '../dataTypes/userTypes/mutationTypes';
+import { UserInput, UserUpdateInput, SignInInput, AuthMutationResponse } from '../dataTypes/userTypes/mutationTypes';
 
 export const authSchema = gql`
 
 # for mutation
 ${UserInput}
+${UserUpdateInput}
 ${SignInInput}
-${MutationResponse}
+${AuthMutationResponse}
 
 type Mutation{
-    signup(userData: UserInput) : MutationResponse
-    signin(userData: SignInInput) : MutationResponse
-    signout: MutationResponse
-    # updateProfile
+    signup(userData: UserInput): AuthMutationResponse
+    signin(userData: SignInInput): AuthMutationResponse
+    signout: AuthMutationResponse
+    updateProfile(userData: UserUpdateInput): AuthMutationResponse
+    resetPassword(newPassword: String!): AuthMutationResponse
     # forgotPassword
-    # resetPassword
-    # deleteAccount
+    deleteAccount: AuthMutationResponse
 }
 
 `;

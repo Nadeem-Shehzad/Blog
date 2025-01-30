@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { IUser, IMutationResponse, ISignIn, MyContext, IQueryResponse } from '../../utils/types';
+import { IUser, IMutationResponse, ISignIn, MyContext, UpdateIUser } from '../../utils/types';
 import User from '../../models/user';
+import { authMiddleware } from '../../middlewares/common/auth';
 
 
 export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {
@@ -60,15 +61,10 @@ export const mSignIn = async (_: any, { userData }: { userData: ISignIn }): Prom
 }
 
 
-export const mSignOut = async (_: any, __: any, contextValue: MyContext): Promise<IMutationResponse> => {
-
-    const { userId } = contextValue;
-    if (!userId) {
-        return { success: false, message: 'You must logged in!.', data: null };
-    }
+export const mSignOut = authMiddleware(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
 
     const updatedUserData = await User.findByIdAndUpdate(
-        userId,
+        context.userId,
         {
             $set: { token: '' }
         },
@@ -76,4 +72,45 @@ export const mSignOut = async (_: any, __: any, contextValue: MyContext): Promis
     );
 
     return { success: true, message: 'User SignedOut.', data: updatedUserData };
-}
+});
+
+
+export const mUpdateProfile = authMiddleware(async (_: any, { userData }: { userData: UpdateIUser }, contextValue: MyContext): Promise<IMutationResponse> => {
+
+    const updatedUserData = await User.findByIdAndUpdate(
+        contextValue.userId,
+        {
+            $set: { ...userData }
+        },
+        { new: true }
+    );
+
+    return { success: true, message: 'User Profile updated.', data: updatedUserData };
+});
+
+
+export const mResetPassword = authMiddleware(async (_: any, { newPassword }: { newPassword: string }, context: MyContext): Promise<IMutationResponse> => {
+
+    const newhashedPassword = await User.hashedPassword(newPassword);
+
+    const updatedUserData = await User.findByIdAndUpdate(
+        context.userId,
+        {
+            $set: {
+                password: newhashedPassword,
+                token: ''
+            }
+        },
+        { new: true }
+    );
+
+    return { success: true, message: 'User Password Reset.', data: updatedUserData };
+});
+
+
+export const mDeleteAccount = authMiddleware(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
+
+    const deletedUserData = await User.findByIdAndDelete(context.userId);
+
+    return { success: true, message: 'User account deleted.', data: deletedUserData };
+});

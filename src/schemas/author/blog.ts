@@ -24,7 +24,7 @@ ${SingleBlogQueryResponse}
 # queries
 type Query{
     getDraftedBlogs: BlogQueryResponse
-    # getMyBlogs
+    getMyBlogs: BlogQueryResponse
 }
 
 # for mutation types

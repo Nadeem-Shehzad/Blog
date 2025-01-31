@@ -3,7 +3,7 @@ import { UserDocument } from '../models/user';
 import { JwtPayload } from 'jsonwebtoken';
 import { BlogDocument } from '../models/blog';
 import { IBookMarkBlog } from '../models/bookmark';
-import {ILikedBlog} from '../models/likedBlog';
+import { ILikedBlog } from '../models/likedBlog';
 
 
 // User Types
@@ -86,4 +86,30 @@ export interface M_BookmarkResponse {
     success: boolean;
     message: string;
     data: IBookMarkBlog[] | IBookMarkBlog | null
+}
+
+export interface FollowUser {
+    username: string;
+    email: string;
+    role: string
+}
+
+export interface FollowUserResponse {
+    success: boolean;
+    message: string;
+    data: FollowUser[] | null
+}
+
+export interface AuthorData{
+    username: string;
+    email: string;
+    bio: string;
+    followers: FollowUser[] | null
+}
+
+export interface AuthorProfileResponse {
+    success: boolean;
+    message: string;
+    author: AuthorData | null;
+    blogs: BlogDocument[] | null;
 }

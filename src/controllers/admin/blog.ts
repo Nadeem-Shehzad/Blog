@@ -1,25 +1,11 @@
 
 import { MyContext, IQueryResponse } from '../../utils/types';
 import User from '../../models/user';
+import { compose, authMiddleware, checkRole, ErrorHandling } from '../../middlewares/common';
 
 
-export const qGetReaders = async (_: any, __: any, contextValue: MyContext): Promise<IQueryResponse> => {
+export const qGetReaders = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))(async (_: any, __: any, context: MyContext): Promise<IQueryResponse> => {
 
-    const { userId } = contextValue;
-    if (!userId) {
-        return { success: false, message: 'You must logged in!.', data: null };
-    }
-
-    const { role } = contextValue;
-    if (role?.toString() !== 'Admin') {
-        return { success: false, message: 'Access denied!.', data: null };
-    }
-
-    try {
-        const users = await User.find({ role: { $nin: ['Admin', 'Author'] } });
-        return { success: true, message: 'User Data', data: users };
-
-    } catch (error) {
-        return { success: true, message: 'Data fetching Error!', data: null }
-    }
-}
+    const users = await User.find({ role: { $nin: ['Admin', 'Author'] } });
+    return { success: true, message: 'Total Readers', data: users };
+});

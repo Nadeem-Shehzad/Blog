@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { IUser, IMutationResponse, ISignIn, MyContext, UpdateIUser } from '../../utils/types';
 import User from '../../models/user';
-import { authMiddleware } from '../../middlewares/common/auth';
+import { compose, authMiddleware, ErrorHandling } from '../../middlewares/common';
 
 
-export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {
+export const mSignUp = compose(ErrorHandling)(async (_: any, { userData }: { userData: IUser }): Promise<IMutationResponse> => {
 
     const user = await User.findUserByEmail(userData.email);
 
     if (user) {
-        return { success: false, message: 'User Exists.', data: null };
+        throw new Error('User Exists.');
     }
 
     const hashedPassword = await User.hashedPassword(userData.password);
@@ -22,25 +22,25 @@ export const mSignUp = async (_: any, { userData }: { userData: IUser }): Promis
     return newUser
         ? { success: true, message: 'User SignedUp.', data: newUser }
         : { success: false, message: 'User not SignedUp.', data: null };
-}
+});
 
 
-export const mSignIn = async (_: any, { userData }: { userData: ISignIn }): Promise<IMutationResponse> => {
+export const mSignIn = compose(ErrorHandling)(async (_: any, { userData }: { userData: ISignIn }): Promise<IMutationResponse> => {
 
     const user = await User.findUserByEmail(userData.email);
 
     if (!user) {
-        return { success: false, message: 'User not Exists.', data: null };
+        throw new Error('User not Exists.');
     }
 
     const passwordMatched = await user.isPasswordMatched(userData.password);
     if (!passwordMatched) {
-        return { success: false, message: 'Password not matched.', data: null };
+        throw new Error('Password not matched.');
     }
 
     const jwt_secret = process.env.JWT_SECRET;
     if (!jwt_secret) {
-        return { success: false, message: 'JWT_SECRET token missing.', data: null };
+        throw new Error('JWT_SECRET token missing.');
     }
 
     const token = jwt.sign({
@@ -58,10 +58,10 @@ export const mSignIn = async (_: any, { userData }: { userData: ISignIn }): Prom
     );
 
     return { success: true, message: 'User SignedIn.', data: updatedUserData };
-}
+});
 
 
-export const mSignOut = authMiddleware(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
+export const mSignOut = compose(ErrorHandling, authMiddleware)(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
 
     const updatedUserData = await User.findByIdAndUpdate(
         context.userId,
@@ -75,7 +75,7 @@ export const mSignOut = authMiddleware(async (_: any, __: any, context: MyContex
 });
 
 
-export const mUpdateProfile = authMiddleware(async (_: any, { userData }: { userData: UpdateIUser }, contextValue: MyContext): Promise<IMutationResponse> => {
+export const mUpdateProfile = compose(ErrorHandling, authMiddleware)(async (_: any, { userData }: { userData: UpdateIUser }, contextValue: MyContext): Promise<IMutationResponse> => {
 
     const updatedUserData = await User.findByIdAndUpdate(
         contextValue.userId,
@@ -89,7 +89,7 @@ export const mUpdateProfile = authMiddleware(async (_: any, { userData }: { user
 });
 
 
-export const mResetPassword = authMiddleware(async (_: any, { newPassword }: { newPassword: string }, context: MyContext): Promise<IMutationResponse> => {
+export const mResetPassword = compose(ErrorHandling, authMiddleware)(async (_: any, { newPassword }: { newPassword: string }, context: MyContext): Promise<IMutationResponse> => {
 
     const newhashedPassword = await User.hashedPassword(newPassword);
 
@@ -108,7 +108,7 @@ export const mResetPassword = authMiddleware(async (_: any, { newPassword }: { n
 });
 
 
-export const mDeleteAccount = authMiddleware(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
+export const mDeleteAccount = compose(ErrorHandling, authMiddleware)(async (_: any, __: any, context: MyContext): Promise<IMutationResponse> => {
 
     const deletedUserData = await User.findByIdAndDelete(context.userId);
 

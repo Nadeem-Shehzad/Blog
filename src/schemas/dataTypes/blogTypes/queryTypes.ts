@@ -51,3 +51,21 @@ export const SingleBlogQueryResponse = `
 `;
 
 
+
+export const AuthorData = `
+  type AuthorData {
+    username: String!
+    email: String!
+    bio: String!
+    followers: [String!]!
+  }
+`;
+
+export const AuthorProfileQueryResponse = `
+  type AuthorProfileQueryResponse {
+    success: Boolean!
+    message: String!
+    author: AuthorData
+    blogs: [Blog]
+  }
+`;

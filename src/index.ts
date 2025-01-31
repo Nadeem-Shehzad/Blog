@@ -33,6 +33,9 @@ app.use('/api',router);
 const apolloServer = new ApolloServer({
   typeDefs,
   resolvers,
+  formatError: (error) => {
+    return { message: error.message }; 
+  },
 });
 
 const startApolloServer = async (): Promise<void> => {

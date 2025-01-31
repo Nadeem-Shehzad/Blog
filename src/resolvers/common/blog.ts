@@ -1,8 +1,15 @@
-import { qGetBlogs,qGetBlog } from '../../controllers/common/blog';
+import {
+    qGetBlogs, qGetBlog, qGetAuthorProfile,
+    qGetBlogsByAuthor, qGetAllAuthors
+} from '../../controllers/common/blog';
+
 
 export const commonBlogResolver = {
     Query: {
         getBlogs: qGetBlogs,
-        getBlog: qGetBlog
+        getBlog: qGetBlog,
+        getAllAuthors: qGetAllAuthors,
+        getAuthorProfile: qGetAuthorProfile,
+        getBlogsByAuthor: qGetBlogsByAuthor
     }
 }

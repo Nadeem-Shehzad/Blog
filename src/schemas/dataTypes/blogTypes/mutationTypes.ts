@@ -31,7 +31,6 @@ export const LikeInput = `
 export const CommentInput = `
   input CommentInput {
     userId: String!
-    comment: String!
   }
 `;
 
@@ -47,5 +46,20 @@ export const BlogMutationResponse = `
     success: Boolean!
     message: String!
     data: Blog
+  }
+`;
+
+export const BlogComment = `
+  type BlogComment {
+    userId: String!
+    comment: String!
+  }
+`;
+
+export const BlogCommentResponse = `
+  type BlogCommentResponse {
+    success: Boolean!
+    message: String!
+    data: BlogComment
   }
 `;

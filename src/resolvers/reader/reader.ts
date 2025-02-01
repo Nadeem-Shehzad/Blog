@@ -5,7 +5,9 @@ import {
     qGetMyBookmark,
     qGetUserFollowings,
     mFollowAuthor,
-    mUnFollowAuthor
+    mUnFollowAuthor,
+    mCommentBlog,
+    mDeleteComment
 } from '../../controllers/reader/reader';
 
 export const readerResolver = {
@@ -21,6 +23,8 @@ export const readerResolver = {
         bookmarkBlog: mBookMarkedBlog,
         deleteBookMark: mDeleteBookMarkedBlog,
         followAuthor: mFollowAuthor,
-        unFollowAuthor: mUnFollowAuthor
+        unFollowAuthor: mUnFollowAuthor,
+        commentBlog: mCommentBlog,
+        deleteMyComment: mDeleteComment
     }
 } 

@@ -4,6 +4,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { BlogDocument } from '../models/blog';
 import { IBookMarkBlog } from '../models/bookmark';
 import { ILikedBlog } from '../models/likedBlog';
+import {IComment} from '../models/comment';
 
 
 // User Types
@@ -80,6 +81,12 @@ export interface LikedBlogResponse {
     success: boolean;
     message: string;
     data: ILikedBlog[] | ILikedBlog | null
+}
+
+export interface CommentBlogResponse{
+    success: boolean;
+    message: string;
+    data: IComment | null
 }
 
 export interface M_BookmarkResponse {

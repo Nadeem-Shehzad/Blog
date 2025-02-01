@@ -1,7 +1,7 @@
 import { qGetDraftedBlogs, qGetMyBlogs,qGetMyFollowers } from '../../controllers/author/author';
 import { mCreateBlog, mUpdateBlog, mDeleteBlog } from '../../controllers/author/author';
 
-export const authorBlogResolver = {
+export const authorResolver = {
     Query: {
         getDraftedBlogs: qGetDraftedBlogs,
         getMyBlogs: qGetMyBlogs,

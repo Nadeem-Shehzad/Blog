@@ -1,5 +1,6 @@
 import { gql } from 'graphql-tag';
-import { FollowUserType,FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes'
+import { FollowUserType,FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
+import {BlogComment, BlogCommentResponse} from '../dataTypes/blogTypes/mutationTypes'
 
 export const readerSchema = gql`
 
@@ -17,6 +18,10 @@ export const readerSchema = gql`
 
  ${FollowUserType}
  ${FollowUserQueryResponse}
+
+ ${BlogComment}
+ ${BlogCommentResponse}
+
 
  type Query{
   getMyBookMarks: BookMarkQueryResponse!
@@ -36,7 +41,8 @@ export const readerSchema = gql`
    deleteBookMark(blogId: String!):BlogMutationResponse!
    followAuthor(authorId: String!): BlogMutationResponse!
    unFollowAuthor(authorId: String!): BlogMutationResponse!
-   # comment on blog
+   commentBlog(blogId: String, comment:String!): BlogCommentResponse!
+   deleteMyComment(blogId: String,commentId: String!) : BlogCommentResponse!
  }
 
 `;

@@ -33,6 +33,10 @@ export const mSignIn = compose(ErrorHandling)(async (_: any, { userData }: { use
         throw new Error('User not Exists.');
     }
 
+    if (user.isBlocked) {
+        throw new Error('Your account has been blocked by the admin.');
+    }
+
     const passwordMatched = await user.isPasswordMatched(userData.password);
     if (!passwordMatched) {
         throw new Error('Password not matched.');

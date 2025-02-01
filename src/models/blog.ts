@@ -47,16 +47,11 @@ const blogSchema: Schema = new Schema({
     },
     comments: {
         type: [{
-            userId: {
+            commentId: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'Users',
-                require: true
+                ref: 'Comment',
+                required: true,
             },
-            comment: {
-                type: String,
-                max: 100,
-                require: true
-            }
         }],
         default: []
     },

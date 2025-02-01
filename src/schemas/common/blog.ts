@@ -8,7 +8,7 @@ import {
 
 import { UserType, QueryResponse } from '../dataTypes/userTypes/queryTypes';
 
-export const commonBlogSchema = gql`
+export const commonSchema = gql`
 
 # query types
 ${BlogType}
@@ -31,8 +31,8 @@ type Query{
     getAllAuthors: QueryResponse
     getAuthorProfile(authorId: String!): AuthorProfileQueryResponse
     getBlogsByAuthor(authorId: String!): BlogQueryResponse
-    # searchBlog
-    # filter blogs by tag and category
+    searchBlogByTags(searchTags: [String!]!): BlogQueryResponse
+    searchBlogByTitle(title:String!): BlogQueryResponse
 }
 
 `;

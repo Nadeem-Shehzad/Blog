@@ -7,6 +7,7 @@ export const UserType = `
     password:String!
     image: String
     bio: String
+    isBlocked: Boolean
     role: String
     token: String
 }`;
@@ -17,6 +18,14 @@ export const QueryResponse = `
     success: Boolean!
     message: String!
     data: [User]
+}`;
+
+
+export const SingleUserQueryResponse = `
+ type SingleUserQueryResponse{
+    success: Boolean!
+    message: String!
+    data: User
 }`;
 
 

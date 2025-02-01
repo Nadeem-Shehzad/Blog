@@ -14,7 +14,7 @@ import { FollowUserType,FollowUserQueryResponse } from '../dataTypes/userTypes/q
 
 
 
-export const authorBlogSchema = gql`
+export const authorSchema = gql`
 
 # query types
 ${BlogType}

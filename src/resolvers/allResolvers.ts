@@ -1,21 +1,22 @@
 
 import { authResolver } from './common/auth'
-import { authorBlogResolver } from './author/author';
-import { commonBlogResolver } from './common/blog';
-import { adminBlogResolver } from './admin/admin';
-import {readerResolver} from './reader/reader';
+import { authorResolver } from './author/author';
+import { commonResolver } from './common/blog';
+import { adminResolver } from './admin/admin';
+import { readerResolver } from './reader/reader';
 
 export const resolvers = {
     Query: {
-        ...adminBlogResolver.Query,
-        ...authorBlogResolver.Query,
-        ...commonBlogResolver.Query,
+        ...adminResolver.Query,
+        ...authorResolver.Query,
+        ...commonResolver.Query,
         ...readerResolver.Query
     },
 
     Mutation: {
+        ...adminResolver.Mutation,
         ...authResolver.Mutation,
-        ...authorBlogResolver.Mutation,
+        ...authorResolver.Mutation,
         ...readerResolver.Mutation
     }
 }

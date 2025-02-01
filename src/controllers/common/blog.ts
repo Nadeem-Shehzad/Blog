@@ -56,3 +56,24 @@ export const qGetAllAuthors = compose(ErrorHandling)(async (): Promise<IQueryRes
     const authers = await User.find({ role: { $nin: ['Admin', 'Reader'] } }).select('-password -token');
     return { success: true, message: 'All Authors', data: authers };
 });
+
+
+export const searchBlogByTag = compose(ErrorHandling)(async (_: any, { searchTags }: { searchTags: string[] }): Promise<BlogResponse> => {
+
+    const blogs = await Blog.find({
+        $or: [
+            { tags: { $all: searchTags } },  // Exact match for all tags
+            { tags: { $in: searchTags.map(tag => new RegExp(tag, 'i')) } } // Partial match
+        ]
+    });
+    return { success: true, message: 'Blogs', data: blogs };
+});
+
+
+export const searchBlogByTitle = compose(ErrorHandling)(async (_: any, { title }: { title: string }): Promise<BlogResponse> => {
+
+    const blogs = await Blog.find({
+        title: { $regex: title, $options: 'i' }
+    });
+    return { success: true, message: 'Blogs', data: blogs };
+});

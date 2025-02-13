@@ -1,6 +1,7 @@
 import {
     qGetBlogs, qGetBlog, qGetAuthorProfile,
-    qGetBlogsByAuthor, qGetAllAuthors, searchBlogByTag, searchBlogByTitle
+    qGetBlogsByAuthor, qGetAllAuthors, searchBlogByTag, searchBlogByTitle,
+    getMostLikedBlogs, getMostLikedBlogsByAuthor
 } from '../../controllers/common/blog';
 
 
@@ -12,6 +13,8 @@ export const commonResolver = {
         getAuthorProfile: qGetAuthorProfile,
         getBlogsByAuthor: qGetBlogsByAuthor,
         searchBlogByTags: searchBlogByTag,
-        searchBlogByTitle: searchBlogByTitle
+        searchBlogByTitle: searchBlogByTitle,
+        getAuhtorMostLikedBlogs: getMostLikedBlogsByAuthor,
+        getMostLikedBlogs: getMostLikedBlogs
     }
 }

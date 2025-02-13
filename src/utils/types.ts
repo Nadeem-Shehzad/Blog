@@ -4,7 +4,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import { BlogDocument } from '../models/blog';
 import { IBookMarkBlog } from '../models/bookmark';
 import { ILikedBlog } from '../models/likedBlog';
-import {IComment} from '../models/comment';
+import { IComment } from '../models/comment';
 
 
 // User Types
@@ -83,7 +83,15 @@ export interface LikedBlogResponse {
     data: ILikedBlog[] | ILikedBlog | null
 }
 
-export interface CommentBlogResponse{
+
+export interface Notification {
+    blogId:string;
+    authorId: string;
+    likedBy: string;
+    message: string;
+}
+
+export interface CommentBlogResponse {
     success: boolean;
     message: string;
     data: IComment | null
@@ -107,7 +115,7 @@ export interface FollowUserResponse {
     data: FollowUser[] | null
 }
 
-export interface AuthorData{
+export interface AuthorData {
     username: string;
     email: string;
     bio: string;

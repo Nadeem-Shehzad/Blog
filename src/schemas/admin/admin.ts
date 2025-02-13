@@ -1,7 +1,7 @@
 import { gql } from 'graphql-tag';
 
 import { UserType, QueryResponse, SingleUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
-import {BlogMutationResponse} from '../dataTypes/blogTypes/mutationTypes'
+import { BlogMutationResponse } from '../dataTypes/blogTypes/mutationTypes'
 
 export const adminSchema = gql`
 

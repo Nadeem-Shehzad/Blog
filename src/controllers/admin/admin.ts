@@ -1,10 +1,16 @@
 
-import { MyContext, IQueryResponse, IMutationResponse, BlogResponse, CommentBlogResponse } from '../../utils/types';
+import {
+    MyContext, IQueryResponse, IMutationResponse,
+    BlogResponse, CommentBlogResponse
+} from '../../utils/types';
 import User from '../../models/user';
-import { compose, authMiddleware, checkRole, ErrorHandling, IsBlogExists, IsUserExists } from '../../middlewares/common';
+import {
+    compose, authMiddleware, checkRole,
+    ErrorHandling, IsBlogExists, IsUserExists
+} from '../../middlewares/common';
 import Blog from '../../models/blog';
 import Comment from '../../models/comment';
-
+import { sendSocketData } from '../../utils/util';
 
 
 export const qGetReaders = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))
@@ -26,6 +32,13 @@ export const mBlockUser = compose(ErrorHandling, authMiddleware, checkRole(['Adm
             { new: true }
         );
 
+        // Notify the user
+        sendSocketData({
+            userId: userId.toString(),
+            type: "block-user",
+            message: `You are blocked by admin!`
+        });
+
         return { success: true, message: 'User Blocked!', data: users };
     });
 
@@ -41,12 +54,31 @@ export const mUnblockUser = compose(ErrorHandling, authMiddleware, checkRole(['A
             { new: true }
         );
 
+        // Notify the user
+        sendSocketData({
+            userId: userId.toString(),
+            type: "unblock-user",
+            message: `You are unblocked by admin!`,
+        });
+
         return { success: true, message: 'User Unblocked!', data: users };
     });
 
 
-export const mDeleteBlog = compose(ErrorHandling, authMiddleware, checkRole(['Admin']), IsBlogExists)
+export const mDeleteBlog = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))
     (async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<BlogResponse> => {
+
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            throw new Error('Blog not Exist!');
+        }
+
+        // Notify the user
+        sendSocketData({
+            userId: blog.creater_id.toString(),
+            type: "delete-blog",
+            message: `Your blog --- ${blog.title} is deleted by admin!`,
+        });
 
         const deletedBlog = await Blog.findByIdAndDelete(blogId);
 
@@ -54,8 +86,19 @@ export const mDeleteBlog = compose(ErrorHandling, authMiddleware, checkRole(['Ad
     });
 
 
-export const mDeleteUser = compose(ErrorHandling, authMiddleware, checkRole(['Admin']), IsUserExists)
+export const mDeleteUser = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))
     (async (_: any, { userId }: { userId: string }, context: MyContext): Promise<IMutationResponse> => {
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new Error('User not exist!');
+        }
+
+        // Notify the user
+        sendSocketData({
+            userId: userId.toString(),
+            type: "delete-user",
+            message: `Your account is deleted by admin!`,
+        });
 
         const deletedUser = await User.findByIdAndDelete(userId);
 
@@ -75,6 +118,13 @@ export const mDeleteComment = compose(ErrorHandling, authMiddleware, checkRole([
         if (!isCommentExist) {
             throw new Error('comment not exists!');
         }
+
+        // Notify the user
+        sendSocketData({
+            userId: isCommentExist.userId.toString(),
+            type: "delete-comment",
+            message: `Your comment --- * ${isCommentExist.comment} * in blog * ${blog.title} * --- is deleted by admin!`,
+        });
 
         await blog.updateOne({ $pull: { comments: { commentId: commentId } } });
 

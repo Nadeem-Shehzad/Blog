@@ -2,6 +2,7 @@ import { BlogResponse, AuthorProfileResponse, IQueryResponse } from '../../utils
 import Blog from '../../models/blog';
 import User from '../../models/user';
 import { compose, ErrorHandling } from '../../middlewares/common';
+import mongoose from 'mongoose';
 
 
 
@@ -75,5 +76,30 @@ export const searchBlogByTitle = compose(ErrorHandling)(async (_: any, { title }
     const blogs = await Blog.find({
         title: { $regex: title, $options: 'i' }
     });
+    return { success: true, message: 'Blogs', data: blogs };
+});
+
+
+export const getMostLikedBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorId }: { authorId: string }): Promise<BlogResponse> => {
+
+    const blogs = await Blog.aggregate([
+        { $match: { creater_id: new mongoose.Types.ObjectId(authorId) } },
+        { $addFields: { likesCount: { $size: "$likes" } } },
+        { $sort: { likesCount: -1 } }
+    ]);
+    return { success: true, message: 'Authors most Liked Blogs ...', data: blogs };
+});
+
+
+export const getMostLikedBlogs = compose(ErrorHandling)(async (): Promise<BlogResponse> => {
+
+    const blogs = await Blog.aggregate([
+        {
+            $addFields: { likesCount: { $size: "$likes" } } // Count likes array length dynamically
+        },
+        {
+            $sort: { likesCount: -1 } // Sort by likes count (descending)
+        }
+    ]);
     return { success: true, message: 'Blogs', data: blogs };
 });

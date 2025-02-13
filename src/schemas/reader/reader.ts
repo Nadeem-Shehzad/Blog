@@ -1,6 +1,6 @@
 import { gql } from 'graphql-tag';
-import { FollowUserType,FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
-import {BlogComment, BlogCommentResponse} from '../dataTypes/blogTypes/mutationTypes'
+import { FollowUserType, FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
+import { BlogComment, BlogCommentResponse } from '../dataTypes/blogTypes/mutationTypes'
 
 export const readerSchema = gql`
 

@@ -4,6 +4,8 @@ import { ApolloServer } from '@apollo/server';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import fileUpload from 'express-fileupload';
+import { Server as SocketIOserver } from 'socket.io';
+import { createServer } from 'http';
 
 import { connectDB } from './config/dbConnection';
 import { typeDefs } from './schemas/allSchemas';
@@ -11,12 +13,30 @@ import { resolvers } from './resolvers/allResolvers';
 import { MyContext } from './utils/types';
 import { tokenValidation } from './middlewares/tokenValidation';
 import router from './routes/route';
+import setupSocket from './socket/socket';
+import { setSocketInstance } from './utils/socketInstance';
 
 
 dotenv.config();
 connectDB();
 
 const app: Application = express();
+
+// socket.io setup
+const server = createServer(app);
+const io = new SocketIOserver(server, {
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true,
+  },
+})
+
+// Store socket instance globally
+setSocketInstance(io);
+setupSocket(io);
+
+
 // to get temp files like images
 app.use(fileUpload({
   useTempFiles: true,
@@ -56,9 +76,10 @@ const startApolloServer = async (): Promise<void> => {
   );
 
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
     console.log(`🚀 GraphQL endpoint at http://localhost:${PORT}/graphql`);
+    console.log(`🚀 WebSocket running at ws://localhost:${PORT}`);
   });
 };
 

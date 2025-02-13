@@ -2,7 +2,7 @@ import { IBlog, BlogResponse, MyContext, FollowUserResponse } from '../../utils/
 import Blog from '../../models/blog';
 import User from '../../models/user';
 import { compose, authMiddleware, checkRole, ErrorHandling, IsBlogExists } from '../../middlewares/common';
-
+import { getSocketInstance } from '../../utils/socketInstance';
 
 
 export const qGetDraftedBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
@@ -33,6 +33,10 @@ export const qGetMyFollowers = compose(ErrorHandling, authMiddleware, checkRole(
 export const mCreateBlog = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
     (async (_: any, { blogData }: { blogData: IBlog }, context: MyContext): Promise<BlogResponse> => {
 
+        if (!context.userId) {
+            throw new Error("User not authenticated!");
+        }
+
         const { title, description, image, tags, status } = blogData;
 
         const finalStatus = status || "draft";
@@ -47,6 +51,14 @@ export const mCreateBlog = compose(ErrorHandling, authMiddleware, checkRole(['Au
             },
             tags: tags || [],
             status: finalStatus
+        });
+
+        const io = getSocketInstance();
+
+        // Notify all readers in the author's room
+        io.to(context.userId.toString()).emit("notification", {
+            type: "blog",
+            message: `New blog published: ${title}!`,
         });
 
         return { success: true, message: `Blog ${finalStatus === "published" ? "published" : "saved as draft"}`, data: newBlog };

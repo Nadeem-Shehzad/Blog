@@ -33,6 +33,8 @@ type Query{
     getBlogsByAuthor(authorId: String!): BlogQueryResponse
     searchBlogByTags(searchTags: [String!]!): BlogQueryResponse
     searchBlogByTitle(title:String!): BlogQueryResponse
+    getAuhtorMostLikedBlogs(authorId: String!): BlogQueryResponse
+    getMostLikedBlogs: BlogQueryResponse
 }
 
 `;

@@ -1,16 +1,24 @@
 import mongoose from 'mongoose';
-import { LikedBlogResponse, MyContext, M_BookmarkResponse, FollowUserResponse, CommentBlogResponse } from '../../utils/types';
+import {
+    LikedBlogResponse, MyContext, M_BookmarkResponse,
+    FollowUserResponse, CommentBlogResponse
+} from '../../utils/types';
 import Blog from '../../models/blog';
 import LikedBlog from '../../models/likedBlog';
 import Comment from '../../models/comment';
 import BookMarkBlog from '../../models/bookmark';
+import { Notifications } from '../../models/notification';
 import User from '../../models/user';
 import { compose, authMiddleware, checkRole, ErrorHandling } from '../../middlewares/common';
-
+import { getSocketInstance } from '../../utils/socketInstance';
+import { activeUsers } from '../../utils/activeUsers';
+import { sendSocketData } from '../../utils/util';
 
 
 export const mLikedBlog = compose(ErrorHandling, authMiddleware, checkRole(['Reader']))
     (async (_: any, { blogId }: { blogId: string }, context: MyContext): Promise<LikedBlogResponse> => {
+
+        //const io = getSocketInstance();
 
         const userObjectId = new mongoose.Types.ObjectId(context.userId);
 
@@ -28,6 +36,13 @@ export const mLikedBlog = compose(ErrorHandling, authMiddleware, checkRole(['Rea
             await LikedBlog.create({
                 userId: userObjectId,
                 blogId: blogId
+            });
+
+            // Notify the author
+            sendSocketData({
+                userId: blog.creater_id.toString(),
+                type: "like",
+                message: `Your blog "${blog.title}" got a new like!`
             });
 
             return { success: true, message: 'Blog liked.', data: null };
@@ -70,6 +85,13 @@ export const mCommentBlog = compose(ErrorHandling, authMiddleware, checkRole(['R
             comment: comment
         });
 
+        // Notify the author
+        sendSocketData({
+            userId: blog.creater_id.toString(),
+            type: "comment",
+            message: `Your blog "${blog.title}" got a new comment!`
+        });
+
         await blog.updateOne({ $push: { comments: { commentId: newComment._id } } });
 
         return { success: true, message: 'New Comment', data: newComment };
@@ -86,11 +108,11 @@ export const mDeleteComment = compose(ErrorHandling, authMiddleware, checkRole([
         }
 
         const comment = await Comment.findById(commentId);
-        if(!comment){
+        if (!comment) {
             throw new Error('Comment not found!');
         }
 
-        if(comment.userId.toString() !== context.userId){
+        if (comment.userId.toString() !== context.userId) {
             throw new Error(`Sorry, you can't delete this comment!`);
         }
 
@@ -163,6 +185,12 @@ export const qGetUserFollowings = compose(ErrorHandling, authMiddleware, checkRo
 export const mFollowAuthor = compose(ErrorHandling, authMiddleware, checkRole(['Reader']))
     (async (_: any, { authorId }: { authorId: string }, context: MyContext): Promise<M_BookmarkResponse> => {
 
+        if (!context.userId) {
+            throw new Error("User not authenticated!");
+        }
+
+        const io = getSocketInstance();
+
         const reader = await User.findById(context.userId);
         if (!reader) {
             throw new Error('User not Found!');
@@ -181,6 +209,34 @@ export const mFollowAuthor = compose(ErrorHandling, authMiddleware, checkRole(['
         if (!isFollowing) {
             await reader.updateOne({ $push: { following: authorId } });
             await author.updateOne({ $push: { followers: context.userId } });
+
+            const authorSocketId = activeUsers.get(authorId.toString());
+            const readerSocketId = activeUsers.get(context.userId.toString());
+
+            const notificationData = {
+                type: "follower",
+                message: `You are followed by user ${reader.username}!`,
+            };
+
+            if (authorSocketId) {
+                io.to(authorSocketId).emit('notification', notificationData);
+            } else {
+                await Notifications.create({
+                    userId: authorId,
+                    ...notificationData,
+                    isRead: false
+                });
+            }
+
+            // Join the Reader to the Author's Room
+            if (readerSocketId) {
+                const socket = io.sockets.sockets.get(readerSocketId);
+                if (socket) {
+                    socket.join(authorId.toString());
+                    console.log(`Reader ${reader.username} joined room ${authorId}`);
+                }
+            }
+
         } else {
             throw new Error(`Already Following!`);
         }

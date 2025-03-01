@@ -1,4 +1,4 @@
-import { IBlog, BlogResponse, MyContext, FollowUserResponse } from '../../utils/types';
+import { IBlog, BlogResponse, MyContext, FollowUserResponse, PaginatedBlogs } from '../../utils/types';
 import Blog from '../../models/blog';
 import User from '../../models/user';
 import { compose, authMiddleware, checkRole, ErrorHandling, IsBlogExists } from '../../middlewares/common';
@@ -6,18 +6,22 @@ import { getSocketInstance } from '../../utils/socketInstance';
 
 
 export const qGetDraftedBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
-    (async (_: any, __: any, context: MyContext): Promise<BlogResponse> => {
+    (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedBlogs> => {
 
-        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: context.userId }] });
-        return { success: true, message: 'All Drafted Blogs', data: draftedBlogs };
+        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: context.userId }] })
+            .skip((page - 1) * limit).limit(limit);
+
+        return { blogs: draftedBlogs, total: draftedBlogs.length };
     });
 
 
 export const qGetMyBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
-    (async (_: any, __: any, context: MyContext): Promise<BlogResponse> => {
+    (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedBlogs> => {
 
-        const myBlogs = await Blog.find({ $and: [{ status: 'published' }, { creater_id: context.userId }] });
-        return { success: true, message: 'All Your Blogs', data: myBlogs };
+        const myBlogs = await Blog.find({ $and: [{ status: 'published' }, { creater_id: context.userId }] })
+            .skip((page - 1) * limit).limit(limit);
+            
+        return { blogs: myBlogs, total: myBlogs.length };
     });
 
 

@@ -1,6 +1,6 @@
 import { gql } from 'graphql-tag';
 
-import { UserType, QueryResponse, SingleUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
+import { UserType, QueryResponse, SingleUserQueryResponse,PaginatedUsers } from '../dataTypes/userTypes/queryTypes';
 import { BlogMutationResponse } from '../dataTypes/blogTypes/mutationTypes'
 
 export const adminSchema = gql`
@@ -8,12 +8,13 @@ export const adminSchema = gql`
 # types
 ${UserType}
 ${QueryResponse}
+${PaginatedUsers}
 ${SingleUserQueryResponse}
 
 ${BlogMutationResponse}
 
 type Query{
-    getReaders: QueryResponse
+    getReaders(page:Int!,limit:Int!): PaginatedUsers
 }
 
 type Mutation{

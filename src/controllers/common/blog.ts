@@ -1,4 +1,4 @@
-import { BlogResponse, AuthorProfileResponse, IQueryResponse } from '../../utils/types';
+import { BlogResponse, AuthorProfileResponse, IQueryResponse, PaginatedBlogs, PaginatedUsers } from '../../utils/types';
 import Blog from '../../models/blog';
 import User from '../../models/user';
 import { compose, ErrorHandling } from '../../middlewares/common';
@@ -6,9 +6,10 @@ import mongoose from 'mongoose';
 
 
 
-export const qGetBlogs = compose(ErrorHandling)(async (): Promise<BlogResponse> => {
-    const blogs = await Blog.find({ status: { $ne: 'draft' } });
-    return { success: true, message: 'All Blogs', data: blogs };
+export const qGetBlogs = compose(ErrorHandling)(async (_: any, { page, limit }: { page: number, limit: number }): Promise<PaginatedBlogs> => {
+    const blogs = await Blog.find({ status: { $ne: 'draft' } }).skip((page - 1) * limit).limit(limit);
+    const totalBlog = blogs.length;
+    return { blogs: blogs, total: totalBlog };
 });
 
 
@@ -37,7 +38,7 @@ export const qGetAuthorProfile = compose(ErrorHandling)(async (_: any, { authorI
 });
 
 
-export const qGetBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorId }: { authorId: string }): Promise<BlogResponse> => {
+export const qGetBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorId, page, limit }: { authorId: string, page: number, limit: number }): Promise<PaginatedBlogs> => {
     const author = await User.findById(authorId);
     if (!author) {
         throw new Error(`Author not Found!`);
@@ -47,15 +48,17 @@ export const qGetBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorI
         throw new Error('Not Author!');
     }
 
-    const blogs = await Blog.find({ creater_id: authorId });
+    const blogs = await Blog.find({ creater_id: authorId }).skip((page - 1) * limit).limit(limit);
+    const totalBlogs = blogs.length;
 
-    return { success: true, message: `${author.username}'s Blogs`, data: blogs };
+    return { blogs, total: totalBlogs };
 });
 
 
-export const qGetAllAuthors = compose(ErrorHandling)(async (): Promise<IQueryResponse> => {
-    const authers = await User.find({ role: { $nin: ['Admin', 'Reader'] } }).select('-password -token');
-    return { success: true, message: 'All Authors', data: authers };
+export const qGetAllAuthors = compose(ErrorHandling)(async (_: any, { page, limit }: { page: number, limit: number }): Promise<PaginatedUsers> => {
+    const authers = await User.find({ role: { $nin: ['Admin', 'Reader'] } }).select('-password -token').skip((page - 1) * limit).limit(limit);
+    const totalAuthors = authers.length;
+    return { users: authers, total: totalAuthors };
 });
 
 

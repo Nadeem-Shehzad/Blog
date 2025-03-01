@@ -2,12 +2,13 @@ import { gql } from 'graphql-tag';
 
 import {
     BlogType, LikeType, CommentType,
-    ImageType, BlogQueryResponse, SingleBlogQueryResponse
+    ImageType, BlogQueryResponse, SingleBlogQueryResponse, PaginatedBlogs
 } from '../dataTypes/blogTypes/queryTypes';
 
 import {
     BlogInput, BlogUpdateInput, LikeInput,
-    CommentInput, ImageInput, BlogMutationResponse
+    CommentInput, ImageInput, BlogMutationResponse,
+    
 } from '../dataTypes/blogTypes/mutationTypes';
 
 import { FollowUserType,FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes'
@@ -22,6 +23,7 @@ ${LikeType}
 ${CommentType}
 ${ImageType}
 ${BlogQueryResponse}
+${PaginatedBlogs}
 ${SingleBlogQueryResponse}
 
 ${FollowUserType}
@@ -29,8 +31,8 @@ ${FollowUserQueryResponse}
 
 # queries
 type Query{
-    getDraftedBlogs: BlogQueryResponse
-    getMyBlogs: BlogQueryResponse
+    getDraftedBlogs(page: Int!, limit: Int!): PaginatedBlogs
+    getMyBlogs(page: Int!, limit: Int!): PaginatedBlogs
     getMyFollowers: FollowUserQueryResponse
 }
 

@@ -58,6 +58,11 @@ export interface CustomJwtPayload extends JwtPayload {
     role: string;
 }
 
+export interface PaginatedUsers{
+    users: IUser[];
+    total: number;
+}
+
 
 // Blog Types
 export interface IBlog {
@@ -69,6 +74,11 @@ export interface IBlog {
     likes: { userId: mongoose.Types.ObjectId }[];
     comments: { userId: mongoose.Types.ObjectId, comment: string }[];
     status: string;
+}
+
+export interface PaginatedBlogs {
+    blogs: IBlog[];
+    total: number;
 }
 
 export interface BlogResponse {

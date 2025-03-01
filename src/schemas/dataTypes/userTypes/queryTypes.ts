@@ -20,6 +20,13 @@ export const QueryResponse = `
     data: [User]
 }`;
 
+export const PaginatedUsers = `
+ type PaginatedUsers{
+   users: [User!]
+   total: Int!
+ }
+`;
+
 
 export const SingleUserQueryResponse = `
  type SingleUserQueryResponse{

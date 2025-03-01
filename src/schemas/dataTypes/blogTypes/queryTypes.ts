@@ -42,6 +42,13 @@ export const BlogQueryResponse = `
   }
 `;
 
+export const PaginatedBlogs = `
+  type PaginatedBlogs {
+    blogs: [Blog!]
+    total: Int!
+  }
+`;
+
 export const SingleBlogQueryResponse = `
   type SingleBlogQueryResponse {
     success: Boolean!

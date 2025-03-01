@@ -1,12 +1,12 @@
 
 import {
-    MyContext, IQueryResponse, IMutationResponse,
-    BlogResponse, CommentBlogResponse
+    MyContext, IMutationResponse,
+    BlogResponse, CommentBlogResponse, PaginatedUsers
 } from '../../utils/types';
 import User from '../../models/user';
 import {
     compose, authMiddleware, checkRole,
-    ErrorHandling, IsBlogExists, IsUserExists
+    ErrorHandling, IsUserExists
 } from '../../middlewares/common';
 import Blog from '../../models/blog';
 import Comment from '../../models/comment';
@@ -14,10 +14,10 @@ import { sendSocketData } from '../../utils/util';
 
 
 export const qGetReaders = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))
-    (async (_: any, __: any, context: MyContext): Promise<IQueryResponse> => {
+    (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedUsers> => {
 
-        const users = await User.find({ role: { $nin: ['Admin', 'Author'] } });
-        return { success: true, message: 'Total Readers', data: users };
+        const users = await User.find({ role: { $nin: ['Admin', 'Author'] } }).skip((page - 1) * limit).limit(limit);
+        return { users, total: users.length };
     });
 
 

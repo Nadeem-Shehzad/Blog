@@ -4,32 +4,66 @@ import User from '../../models/user';
 import { compose, authMiddleware, checkRole, ErrorHandling, IsBlogExists } from '../../middlewares/common';
 import { getSocketInstance } from '../../utils/socketInstance';
 
+import { getRedisClient } from '../../redis/redis';
+const redis = getRedisClient();
+
 
 export const qGetDraftedBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
     (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedBlogs> => {
 
-        const draftedBlogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: context.userId }] })
-            .skip((page - 1) * limit).limit(limit);
+        const authorId = context.userId;
+        const key: string = `qGetDraftedBlogs:${authorId}:${page}:${limit}`;
 
-        return { blogs: draftedBlogs, total: draftedBlogs.length };
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
+        const blogs = await Blog.find({ $and: [{ status: 'draft' }, { creater_id: context.userId }] }).skip((page - 1) * limit).limit(limit);
+        const total = blogs.length;    
+
+        await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600);
+
+        return { blogs, total };
     });
 
 
 export const qGetMyBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
     (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedBlogs> => {
 
-        const myBlogs = await Blog.find({ $and: [{ status: 'published' }, { creater_id: context.userId }] })
-            .skip((page - 1) * limit).limit(limit);
-            
-        return { blogs: myBlogs, total: myBlogs.length };
+        const authorId = context.userId;
+        const key: string = `qGetMyBlogs:${authorId}:${page}:${limit}`;
+
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
+        const blogs = await Blog.find({ $and: [{ status: 'published' }, { creater_id: context.userId }] }).skip((page - 1) * limit).limit(limit);
+        const total = blogs.length;    
+
+        await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600);
+
+        return { blogs, total };
     });
 
 
 export const qGetMyFollowers = compose(ErrorHandling, authMiddleware, checkRole(['Author']))
     (async (_: any, __: any, context: MyContext): Promise<FollowUserResponse> => {
 
-        const myFollowers = await User.findById(context.userId).populate('followers', 'username email ').lean();
-        return { success: true, message: 'All Followers', data: myFollowers?.followers || [] };
+        const authorId = context.userId;
+        const key: string = `qGetMyFollowers:${authorId}`;
+
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
+        const data = await User.findById(context.userId).populate('followers', 'username email').lean();
+
+        await redis.set(key, JSON.stringify({ data }), 'EX', 3600);
+
+        return { success: true, message: 'All Followers', data: data?.followers || [] };
     });
 
 

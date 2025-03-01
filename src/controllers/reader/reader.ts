@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import {
     LikedBlogResponse, MyContext, M_BookmarkResponse,
-    FollowUserResponse, CommentBlogResponse
+    FollowUserResponse, CommentBlogResponse, PaginatedLikedBlogs, PaginatedBookMarkedBlogs
 } from '../../utils/types';
 import Blog from '../../models/blog';
 import LikedBlog from '../../models/likedBlog';
@@ -13,6 +13,9 @@ import { compose, authMiddleware, checkRole, ErrorHandling } from '../../middlew
 import { getSocketInstance } from '../../utils/socketInstance';
 import { activeUsers } from '../../utils/activeUsers';
 import { sendSocketData } from '../../utils/util';
+
+import { getRedisClient } from '../../redis/redis';
+const redis = getRedisClient();
 
 
 export const mLikedBlog = compose(ErrorHandling, authMiddleware, checkRole(['Reader']))
@@ -61,11 +64,22 @@ export const mLikedBlog = compose(ErrorHandling, authMiddleware, checkRole(['Rea
 
 
 export const qGetMyLikedBlogs = compose(ErrorHandling, authMiddleware, checkRole(['Reader']))
-    (async (_: any, __: any, context: MyContext): Promise<LikedBlogResponse> => {
+    (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedLikedBlogs> => {
 
-        const likedBlogs = await LikedBlog.find({ userId: context.userId });
+        const readerId = context.userId;
+        const key: string = `qGetMyLikedBlogs:${readerId}:${page}:${limit}`;
 
-        return { success: true, message: 'Your liked blogs.', data: likedBlogs };
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
+        const blogs = await LikedBlog.find({ userId: context.userId }).skip((page - 1) * limit).limit(limit);
+        const total = blogs.length;
+
+        await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600);
+
+        return { blogs, total };
     });
 
 
@@ -147,11 +161,22 @@ export const mBookMarkedBlog = compose(ErrorHandling, authMiddleware, checkRole(
 
 
 export const qGetMyBookmark = compose(ErrorHandling, authMiddleware, checkRole(['Reader']))
-    (async (_: any, __: any, context: MyContext): Promise<M_BookmarkResponse> => {
+    (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedLikedBlogs> => {
 
-        const bookMarks = await BookMarkBlog.find({ userId: context.userId });
+        const readerId = context.userId;
+        const key: string = `qGetMyBookmark:${readerId}:${page}:${limit}`;
 
-        return { success: true, message: 'Your bookmarks.', data: bookMarks };
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }  
+
+        const blogs = await BookMarkBlog.find({ userId: context.userId }).skip((page - 1) * limit).limit(limit);
+        const total = blogs.length;
+
+        await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600); 
+
+        return { blogs, total };
     });
 
 

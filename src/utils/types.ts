@@ -81,6 +81,16 @@ export interface PaginatedBlogs {
     total: number;
 }
 
+export interface PaginatedLikedBlogs {
+    blogs: ILikedBlog[];
+    total: number;
+}
+
+export interface PaginatedBookMarkedBlogs {
+    blogs: IBookMarkBlog[];
+    total: number;
+}
+
 export interface BlogResponse {
     success: boolean;
     message: string;

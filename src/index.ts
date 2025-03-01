@@ -16,6 +16,8 @@ import router from './routes/route';
 import setupSocket from './socket/socket';
 import { setSocketInstance } from './utils/socketInstance';
 
+import { closeRedisClient } from './redis/redis';
+
 
 dotenv.config();
 connectDB();
@@ -82,5 +84,10 @@ const startApolloServer = async (): Promise<void> => {
     console.log(`🚀 WebSocket running at ws://localhost:${PORT}`);
   });
 };
+
+process.on('SIGINT', async () => {
+  await closeRedisClient(); 
+  process.exit(0);
+});
 
 startApolloServer();

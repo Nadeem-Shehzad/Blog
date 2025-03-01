@@ -49,6 +49,20 @@ export const PaginatedBlogs = `
   }
 `;
 
+export const LikedBlog = `
+  type LikedBlog {
+    userId: String!
+    blogId: String! 
+  } 
+`;
+
+export const PaginatedLikedBlogs = `
+  type PaginatedLikedBlogs {
+    blogs: [LikedBlog!]
+    total: Int!
+  }
+`;
+
 export const SingleBlogQueryResponse = `
   type SingleBlogQueryResponse {
     success: Boolean!
@@ -56,8 +70,6 @@ export const SingleBlogQueryResponse = `
     data: Blog
   }
 `;
-
-
 
 export const AuthorData = `
   type AuthorData {

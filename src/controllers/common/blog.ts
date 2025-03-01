@@ -1,24 +1,51 @@
-import { BlogResponse, AuthorProfileResponse, IQueryResponse, PaginatedBlogs, PaginatedUsers } from '../../utils/types';
+import {
+    BlogResponse, AuthorProfileResponse,
+    PaginatedBlogs, PaginatedUsers
+} from '../../utils/types';
 import Blog from '../../models/blog';
 import User from '../../models/user';
 import { compose, ErrorHandling } from '../../middlewares/common';
 import mongoose from 'mongoose';
 
+import { getRedisClient } from '../../redis/redis';
+const redis = getRedisClient();
 
 
 export const qGetBlogs = compose(ErrorHandling)(async (_: any, { page, limit }: { page: number, limit: number }): Promise<PaginatedBlogs> => {
+
+    const key: string = `qGetBlogs:${page}:${limit}`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
     const blogs = await Blog.find({ status: { $ne: 'draft' } }).skip((page - 1) * limit).limit(limit);
-    const totalBlog = blogs.length;
-    return { blogs: blogs, total: totalBlog };
+    const total = blogs.length;
+
+    await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600);
+
+    return { blogs: blogs, total: total };
 });
 
 
 export const qGetBlog = compose(ErrorHandling)(async (_: any, { blogId }: { blogId: string }): Promise<BlogResponse> => {
-    const blog = await Blog.findById(blogId);
-    if (!blog) {
+
+    const key: string = `qGetBlog:${blogId}`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
+    const data = await Blog.findById(blogId);
+    if (!data) {
         return { success: false, message: 'Blog not Exist!', data: null };
     }
-    return { success: true, message: 'Blog', data: blog };
+
+    await redis.set(key, JSON.stringify({ data }), 'EX', 3600);
+
+    return { success: true, message: 'Blog', data: data };
 });
 
 
@@ -39,6 +66,14 @@ export const qGetAuthorProfile = compose(ErrorHandling)(async (_: any, { authorI
 
 
 export const qGetBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorId, page, limit }: { authorId: string, page: number, limit: number }): Promise<PaginatedBlogs> => {
+
+    const key: string = `qGetBlogsByAuthor:${authorId}:${page}:${limit}`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
     const author = await User.findById(authorId);
     if (!author) {
         throw new Error(`Author not Found!`);
@@ -49,16 +84,29 @@ export const qGetBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorI
     }
 
     const blogs = await Blog.find({ creater_id: authorId }).skip((page - 1) * limit).limit(limit);
-    const totalBlogs = blogs.length;
+    const total = blogs.length;
 
-    return { blogs, total: totalBlogs };
+    await redis.set(key, JSON.stringify({ blogs, total }), 'EX', 3600);
+
+    return { blogs, total };
 });
 
 
 export const qGetAllAuthors = compose(ErrorHandling)(async (_: any, { page, limit }: { page: number, limit: number }): Promise<PaginatedUsers> => {
-    const authers = await User.find({ role: { $nin: ['Admin', 'Reader'] } }).select('-password -token').skip((page - 1) * limit).limit(limit);
-    const totalAuthors = authers.length;
-    return { users: authers, total: totalAuthors };
+    
+    const key: string = `qGetAllAuthors:${page}:${limit}`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+    
+    const users = await User.find({ role: { $nin: ['Admin', 'Reader'] } }).select('-password -token').skip((page - 1) * limit).limit(limit);
+    const total = users.length;
+
+    await redis.set(key, JSON.stringify({ users, total }), 'EX', 3600);
+
+    return { users, total };
 });
 
 
@@ -85,18 +133,35 @@ export const searchBlogByTitle = compose(ErrorHandling)(async (_: any, { title }
 
 export const getMostLikedBlogsByAuthor = compose(ErrorHandling)(async (_: any, { authorId }: { authorId: string }): Promise<BlogResponse> => {
 
-    const blogs = await Blog.aggregate([
+    const key: string = `getMostLikedBlogsByAuthor:${authorId}`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
+    const data = await Blog.aggregate([
         { $match: { creater_id: new mongoose.Types.ObjectId(authorId) } },
         { $addFields: { likesCount: { $size: "$likes" } } },
         { $sort: { likesCount: -1 } }
     ]);
-    return { success: true, message: 'Authors most Liked Blogs ...', data: blogs };
+
+    await redis.set(key, JSON.stringify({ data }), 'EX', 3600);   
+
+    return { success: true, message: 'Authors most Liked Blogs ...', data: data };
 });
 
 
 export const getMostLikedBlogs = compose(ErrorHandling)(async (): Promise<BlogResponse> => {
 
-    const blogs = await Blog.aggregate([
+    const key: string = `getMostLikedBlogs`;
+
+    const cachedData = await redis.get(key);
+    if (cachedData) {
+        return JSON.parse(cachedData);
+    }
+
+    const data = await Blog.aggregate([
         {
             $addFields: { likesCount: { $size: "$likes" } } // Count likes array length dynamically
         },
@@ -104,5 +169,8 @@ export const getMostLikedBlogs = compose(ErrorHandling)(async (): Promise<BlogRe
             $sort: { likesCount: -1 } // Sort by likes count (descending)
         }
     ]);
-    return { success: true, message: 'Blogs', data: blogs };
+
+    await redis.set(key, JSON.stringify({ data }), 'EX', 3600);
+
+    return { success: true, message: 'Blogs', data: data };
 });

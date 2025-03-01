@@ -12,12 +12,26 @@ import Blog from '../../models/blog';
 import Comment from '../../models/comment';
 import { sendSocketData } from '../../utils/util';
 
+import { getRedisClient } from '../../redis/redis';
+const redis = getRedisClient();
+
 
 export const qGetReaders = compose(ErrorHandling, authMiddleware, checkRole(['Admin']))
     (async (_: any, { page, limit }: { page: number, limit: number }, context: MyContext): Promise<PaginatedUsers> => {
 
+        const key: string = `qGetReaders:${page}:${limit}`;
+
+        const cachedData = await redis.get(key);
+        if (cachedData) {
+            return JSON.parse(cachedData);
+        }
+
         const users = await User.find({ role: { $nin: ['Admin', 'Author'] } }).skip((page - 1) * limit).limit(limit);
-        return { users, total: users.length };
+        const total = users.length;        
+
+        await redis.set(key, JSON.stringify({ users, total }), 'EX', 3600);
+
+        return { users, total };
     });
 
 

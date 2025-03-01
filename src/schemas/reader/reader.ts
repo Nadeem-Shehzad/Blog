@@ -1,6 +1,7 @@
 import { gql } from 'graphql-tag';
 import { FollowUserType, FollowUserQueryResponse } from '../dataTypes/userTypes/queryTypes';
-import { BlogComment, BlogCommentResponse } from '../dataTypes/blogTypes/mutationTypes'
+import { BlogComment, BlogCommentResponse } from '../dataTypes/blogTypes/mutationTypes';
+import { PaginatedBlogs, PaginatedLikedBlogs,LikedBlog } from '../dataTypes/blogTypes/queryTypes';
 
 export const readerSchema = gql`
 
@@ -21,11 +22,14 @@ export const readerSchema = gql`
 
  ${BlogComment}
  ${BlogCommentResponse}
+ ${PaginatedBlogs}
+ ${LikedBlog}
+ ${PaginatedLikedBlogs}
 
 
  type Query{
-  getMyBookMarks: BookMarkQueryResponse!
-  getMyLikedBlogs: BookMarkQueryResponse!
+  getMyBookMarks(page: Int!, limit: Int!): PaginatedLikedBlogs
+  getMyLikedBlogs(page: Int!, limit: Int!): PaginatedLikedBlogs
   getUserFollowings: FollowUserQueryResponse
  }
 

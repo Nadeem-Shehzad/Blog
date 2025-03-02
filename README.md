@@ -21,13 +21,12 @@ A **medium-level** blog application built with **Node.js, Express, GraphQL, and 
   - Search blogs by **title, content, and tags**  
   - Filter by **popular, latest, and trending**  
 
-- **Real-time & Messaging**  
-  - **Kafka & Redis** for event-driven notifications  
+- **Real-time & Messaging**    
   - **Socket.io** for instant updates  
 
 - **Email & File Upload**  
   - Email verification & password reset using **Nodemailer**  
-  - Image uploads via **Multer & Cloudinary**  
+  - Image uploads via **Cloudinary**  
 
 - **GraphQL & REST API**  
   - Hybrid API support: **GraphQL for flexibility, REST for simplicity**  

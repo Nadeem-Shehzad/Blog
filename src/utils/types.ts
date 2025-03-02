@@ -148,3 +148,10 @@ export interface AuthorProfileResponse {
     author: AuthorData | null;
     blogs: BlogDocument[] | null;
 }
+
+export interface MailOptions {
+    from: string;
+    to: string;
+    subject: string;
+    html: string;
+}

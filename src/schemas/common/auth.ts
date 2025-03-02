@@ -16,8 +16,9 @@ type Mutation{
     signout: AuthMutationResponse
     updateProfile(userData: UserUpdateInput): AuthMutationResponse
     resetPassword(newPassword: String!): AuthMutationResponse
-    # forgotPassword
     deleteAccount: AuthMutationResponse
+    forgotPassword(email: String!): AuthMutationResponse
+    resetPasswordByEmail(token:String!, newPassword:String!): AuthMutationResponse
 }
 
 `;

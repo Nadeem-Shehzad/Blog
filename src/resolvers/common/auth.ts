@@ -1,5 +1,8 @@
 
-import { mSignUp, mSignIn, mSignOut, mUpdateProfile,mResetPassword,mDeleteAccount } from '../../controllers/common/auth';
+import {
+    mSignUp, mSignIn, mSignOut, mUpdateProfile, mResetPassword,
+    mForgotPassword, mDeleteAccount, mResetPasswordByEmail
+} from '../../controllers/common/auth';
 
 
 export const authResolver = {
@@ -10,6 +13,8 @@ export const authResolver = {
         signout: mSignOut,
         updateProfile: mUpdateProfile,
         resetPassword: mResetPassword,
-        deleteAccount: mDeleteAccount
+        deleteAccount: mDeleteAccount,
+        forgotPassword: mForgotPassword,
+        resetPasswordByEmail: mResetPasswordByEmail
     }
 }
